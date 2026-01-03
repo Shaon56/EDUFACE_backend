@@ -43,8 +43,8 @@ def test_routine_fields():
         for i, routine in enumerate(routines, 1):
             print(f"\nRoutine {i}:")
             print(f"  ID: {routine.get('id')}")
-            print(f"  Subject: {routine.get('subject')} {'✅' if routine.get('subject') else '❌ MISSING'}")
-            print(f"  Day: {routine.get('day')} {'✅' if routine.get('day') else '❌ MISSING'}")
+            print(f"  Subject: {routine.get('Subject')} {'✅' if routine.get('Subject') else '❌ MISSING'}")
+            print(f"  Day: {routine.get('Day')} {'✅' if routine.get('Day') else '❌ MISSING'}")
             print(f"  Start Time: {routine.get('start_time')}")
             print(f"  End Time: {routine.get('end_time')}")
             print(f"  Room: {routine.get('room_number')}")

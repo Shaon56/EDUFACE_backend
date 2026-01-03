@@ -52,47 +52,46 @@ def create_attendance():
         db = GoogleSheetsDB()
         identity = get_jwt_identity()
         user_id = int(str(identity).strip()) if identity else None
-        
+
         if not user_id:
             return jsonify({'message': 'Invalid token'}), 401
-        
+
         user = db.find_user_by_id(user_id)
-        
+
         # Only admin can manually create records
         if not user or user.get('Role', 'student') != 'admin':
             return jsonify({'message': 'Unauthorized'}), 403
-        
+
         data = request.get_json()
-        
+
         # Validate required fields
         required_fields = ['user_id', 'subject', 'status']
         if not all(field in data for field in required_fields):
             return jsonify({'message': 'Missing required fields'}), 400
-        
+
         # Check if student exists
         student = db.find_user_by_id(data['user_id'])
         if not student:
             return jsonify({'message': 'Student not found'}), 404
-        
+
         # Create attendance record
         attendance_data = {
             'user_id': data['user_id'],
-        'subject': data['subject'],
-        'status': data['status'],
-        'date': data.get('date', datetime.now().strftime('%Y-%m-%d'))
-    }
-    
-    new_attendance = db.add_attendance(attendance_data)
-    
-    if new_attendance:
-        return jsonify({'message': 'Attendance recorded', 'attendance': new_attendance}), 201
-    else:
-        return jsonify({'message': 'Failed to record attendance'}), 500
-    
-    data = request.get_json()
-    
-    # Update fields
-    if 'status' in data:
+            'subject': data['subject'],
+            'status': data['status'],
+            'date': data.get('date', datetime.now().strftime('%Y-%m-%d'))
+        }
+
+        new_attendance = db.add_attendance(attendance_data)
+
+        if new_attendance:
+            return jsonify({'message': 'Attendance recorded', 'attendance': new_attendance}), 201
+        else:
+            return jsonify({'message': 'Failed to record attendance'}), 500
+    except Exception as e:
+        print(f'[ERROR] create_attendance: {e}')
+        return jsonify({'message': f'Error: {str(e)}'}), 500
+    # ...existing code...
         attendance.status = data['status']
     if 'date' in data:
         attendance.date = datetime.strptime(data['date'], '%Y-%m-%d').date()
