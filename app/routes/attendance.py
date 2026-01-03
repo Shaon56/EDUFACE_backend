@@ -13,64 +13,70 @@ attendance_bp = Blueprint('attendance', __name__)
 @jwt_required()
 def get_attendance():
     """Get attendance records"""
-    db = GoogleSheetsDB()
-    user_id = int(get_jwt_identity())
-    user = db.find_user_by_id(user_id)
-    subject = request.args.get('subject')
-    
-    if user.get('Role', 'student') == 'admin':
-        # Admin can see all attendance
-        records = db.get_all_attendance()
-        if subject:
-            records = [r for r in records if r.get('Subject', '').lower() == subject.lower()]
-    else:
-        # Students can only see their own
-        records = db.get_user_attendance(user_id)
-        if subject:
-            records = [r for r in records if r.get('Subject', '').lower() == subject.lower()]
-    
-    return jsonify(records), 200
-
-@attendance_bp.route('/recent', methods=['GET'])
-@jwt_required()
-def get_recent_attendance():
-    """Get recent attendance records for dashboard"""
-    db = GoogleSheetsDB()
-    user_id = int(get_jwt_identity())
-    
-    # Get user's recent attendance
-    records = db.get_user_attendance(user_id)
-    
-    # Return last 10 records
-    return jsonify(records[-10:] if records else []), 200
+    try:
+        db = GoogleSheetsDB()
+        identity = get_jwt_identity()
+        user_id = int(str(identity).strip()) if identity else None
+        
+        if not user_id:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        user = db.find_user_by_id(user_id)
+        
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        
+        subject = request.args.get('subject')
+        
+        if user.get('Role', 'student') == 'admin':
+            # Admin can see all attendance
+            records = db.get_all_attendance()
+            if subject:
+                records = [r for r in records if r.get('Subject', '').lower() == subject.lower()]
+        else:
+            # Students can only see their own
+            records = db.get_user_attendance(user_id)
+            if subject:
+                records = [r for r in records if r.get('Subject', '').lower() == subject.lower()]
+        
+        return jsonify(records), 200
+    except Exception as e:
+        print(f'[ERROR] get_attendance: {e}')
+        return jsonify({'message': f'Error: {str(e)}'}), 500
 
 @attendance_bp.route('', methods=['POST'])
 @jwt_required()
 def create_attendance():
     """Create attendance record (admin only)"""
-    db = GoogleSheetsDB()
-    user_id = int(get_jwt_identity())
-    user = db.find_user_by_id(user_id)
-    
-    # Only admin can manually create records
-    if user.get('Role', 'student') != 'admin':
-        return jsonify({'message': 'Unauthorized'}), 403
-    
-    data = request.get_json()
-    
-    # Validate required fields
-    required_fields = ['user_id', 'subject', 'status']
-    if not all(field in data for field in required_fields):
-        return jsonify({'message': 'Missing required fields'}), 400
-    
-    # Check if student exists
-    student = db.find_user_by_id(data['user_id'])
-    if not student:
-        return jsonify({'message': 'Student not found'}), 404
-    
-    # Create attendance record
-    attendance_data = {
-        'user_id': data['user_id'],
+    try:
+        db = GoogleSheetsDB()
+        identity = get_jwt_identity()
+        user_id = int(str(identity).strip()) if identity else None
+        
+        if not user_id:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        user = db.find_user_by_id(user_id)
+        
+        # Only admin can manually create records
+        if not user or user.get('Role', 'student') != 'admin':
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['user_id', 'subject', 'status']
+        if not all(field in data for field in required_fields):
+            return jsonify({'message': 'Missing required fields'}), 400
+        
+        # Check if student exists
+        student = db.find_user_by_id(data['user_id'])
+        if not student:
+            return jsonify({'message': 'Student not found'}), 404
+        
+        # Create attendance record
+        attendance_data = {
+            'user_id': data['user_id'],
         'subject': data['subject'],
         'status': data['status'],
         'date': data.get('date', datetime.now().strftime('%Y-%m-%d'))

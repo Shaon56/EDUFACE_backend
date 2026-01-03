@@ -12,17 +12,21 @@ routines_bp = Blueprint('routines', __name__)
 @jwt_required()
 def get_routines():
     """Get all routines or filter by day"""
-    db = GoogleSheetsDB()
-    day = request.args.get('day')
-    
-    all_routines = db.get_all_routines()
-    
-    if day:
-        routines = [r for r in all_routines if r.get('Day', '').lower() == day.lower()]
-    else:
-        routines = all_routines
-    
-    return jsonify(routines), 200
+    try:
+        db = GoogleSheetsDB()
+        day = request.args.get('day')
+        
+        all_routines = db.get_all_routines()
+        
+        if day:
+            routines = [r for r in all_routines if r.get('Day', '').lower() == day.lower()]
+        else:
+            routines = all_routines
+        
+        return jsonify(routines), 200
+    except Exception as e:
+        print(f'[ERROR] get_routines: {e}')
+        return jsonify({'message': f'Error: {str(e)}'}), 500
 
 @routines_bp.route('/<int:routine_id>', methods=['GET'])
 @jwt_required()
@@ -45,11 +49,16 @@ def create_routine():
         db = GoogleSheetsDB()
         print('[DEBUG] Creating routine endpoint called')
         
-        user_id = int(get_jwt_identity())
+        identity = get_jwt_identity()
+        user_id = int(str(identity).strip()) if identity else None
         print(f'[DEBUG] User ID from JWT: {user_id}')
         
+        if not user_id:
+            print('[ERROR] Invalid token - no user ID')
+            return jsonify({'message': 'Invalid token'}), 401
+        
         user = db.find_user_by_id(user_id)
-        print(f'[DEBUG] User found: {user}')
+        print(f'[DEBUG] User found: {user is not None}')
         
         if not user:
             print('[ERROR] User not found in database')
@@ -83,7 +92,7 @@ def create_routine():
         new_routine = db.add_routine(routine_data)
         
         if new_routine:
-            print(f'[SUCCESS] Routine created with ID: {new_routine["id"]}')
+            print(f'[SUCCESS] Routine created with ID: {new_routine.get("id")}')
             return jsonify({'message': 'Routine created', 'routine': new_routine}), 201
         else:
             return jsonify({'message': 'Failed to create routine'}), 500
@@ -99,16 +108,25 @@ def create_routine():
 @jwt_required()
 def delete_routine(routine_id):
     """Delete routine (admin only)"""
-    db = GoogleSheetsDB()
-    user_id = int(get_jwt_identity())
-    user = db.find_user_by_id(user_id)
-    
-    if not user or user.get('Role', 'student') != 'admin':
-        return jsonify({'message': 'Unauthorized'}), 403
-    
-    success = db.delete_routine(routine_id)
-    
-    if success:
-        return jsonify({'message': 'Routine deleted'}), 200
-    else:
-        return jsonify({'message': 'Routine not found'}), 404
+    try:
+        db = GoogleSheetsDB()
+        identity = get_jwt_identity()
+        user_id = int(str(identity).strip()) if identity else None
+        
+        if not user_id:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        user = db.find_user_by_id(user_id)
+        
+        if not user or user.get('Role', 'student') != 'admin':
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        success = db.delete_routine(routine_id)
+        
+        if success:
+            return jsonify({'message': 'Routine deleted'}), 200
+        else:
+            return jsonify({'message': 'Routine not found'}), 404
+    except Exception as e:
+        print(f'[ERROR] delete_routine: {e}')
+        return jsonify({'message': f'Error: {str(e)}'}), 500
