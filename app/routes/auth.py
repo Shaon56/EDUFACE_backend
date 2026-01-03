@@ -128,7 +128,7 @@ def verify_token():
         'valid': True,
         'user': {
             'id': user.get('ID'),
-            'full_name': user.get('Full Name'),
+            'name': user.get('Full Name'),
             'email': user.get('Email'),
             'role': user.get('Role', 'student')
         }
