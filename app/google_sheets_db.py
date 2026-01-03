@@ -5,6 +5,7 @@ Handles all database operations using Google Sheets as persistent storage
 import gspread
 from google.oauth2.service_account import Credentials
 import os
+import json
 from datetime import datetime
 
 class GoogleSheetsDB:
@@ -18,13 +19,22 @@ class GoogleSheetsDB:
         
         if creds_json_str:
             # Production: Use environment variable
-            import json
             creds_dict = json.loads(creds_json_str)
             credentials = Credentials.from_service_account_info(creds_dict, scopes=self.scopes)
         else:
             # Development: Use local service_account.json
+            # Look for the file in the backend folder (parent of app folder)
+            backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            creds_file = os.path.join(backend_dir, 'service_account.json')
+            
+            if not os.path.exists(creds_file):
+                raise FileNotFoundError(
+                    f"service_account.json not found at {creds_file}. "
+                    "Please copy it from the root folder or set GOOGLE_SHEETS_CREDS environment variable."
+                )
+            
             credentials = Credentials.from_service_account_file(
-                'service_account.json',
+                creds_file,
                 scopes=self.scopes
             )
         
