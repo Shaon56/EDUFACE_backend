@@ -142,9 +142,12 @@ class GoogleSheetsDB:
         """Get all routines"""
         try:
             records = self.routines_sheet.get_all_records()
+            print(f"[DEBUG] Raw records from sheet: {records}")
+            
             # Normalize field names to lowercase for consistent API responses
             normalized = []
             for record in records:
+                print(f"[DEBUG] Processing record: {record}")
                 normalized_record = {
                     'id': record.get('ID', ''),
                     'user_id': record.get('User ID', ''),
@@ -155,10 +158,13 @@ class GoogleSheetsDB:
                     'instructor_name': record.get('instructor_name', ''),
                     'room_number': record.get('room_number', '')
                 }
+                print(f"[DEBUG] Normalized record: {normalized_record}")
                 normalized.append(normalized_record)
             return normalized
         except Exception as e:
             print(f"[ERROR] Failed to get routines: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     def get_user_routines(self, user_id):
