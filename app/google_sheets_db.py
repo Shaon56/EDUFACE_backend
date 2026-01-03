@@ -52,7 +52,14 @@ class GoogleSheetsDB:
         # Get worksheets - Handle both singular and plural names
         self.users_sheet = self._get_worksheet('Users', 'User')
         self.routines_sheet = self._get_worksheet('Routines', 'Routine')
-        self.attendance_sheet = self._get_worksheet('Attendance', 'Attendances')
+        
+        # Try to get Attendance sheet (may not exist if using subject-wise sheets)
+        try:
+            self.attendance_sheet = self._get_worksheet('Attendance', 'Attendances')
+        except:
+            print("[DEBUG] Attendance sheet not found - using subject-wise sheets")
+            self.attendance_sheet = None
+        
         self.results_sheet = self._get_worksheet('Results', 'Result')
     
     def _get_worksheet(self, *names):
@@ -251,42 +258,128 @@ class GoogleSheetsDB:
             return []
     
     def get_user_attendance(self, user_id):
-        """Get attendance records for a specific user"""
+        """Get attendance records for a specific user from all subject sheets"""
         try:
-            records = self.attendance_sheet.get_all_records()
-            user_attendance = [r for r in records if str(r.get('User ID', '')) == str(user_id)]
-            return user_attendance
+            all_attendance = []
+            
+            # Define subject sheets
+            subjects = ['Chemistry', 'Math', 'Physics', 'English']
+            
+            for subject in subjects:
+                try:
+                    worksheet = self.spreadsheet.worksheet(subject)
+                    records = worksheet.get_all_records()
+                    
+                    # Get student's record from this subject
+                    student_id = None
+                    users = self.get_all_users()
+                    for user in users:
+                        if user.get('ID') == user_id:
+                            student_id = user.get('Student ID')
+                            break
+                    
+                    if student_id:
+                        subject_records = [r for r in records if str(r.get('Student ID', '')) == str(student_id)]
+                        # Add subject info to each record
+                        for record in subject_records:
+                            record['Subject'] = subject
+                        all_attendance.extend(subject_records)
+                except:
+                    continue
+            
+            return all_attendance
         except Exception as e:
             print(f"[ERROR] Failed to get user attendance: {e}")
             return []
     
-    def add_attendance(self, attendance_data):
-        """Add attendance record"""
+    def get_attendance_by_subject(self, subject):
+        """Get all attendance records for a specific subject"""
         try:
-            records = self.attendance_sheet.get_all_records()
-            next_id = len(records) + 1
+            worksheet = self.spreadsheet.worksheet(subject)
+            records = worksheet.get_all_records()
+            
+            # Add subject info to each record
+            for record in records:
+                record['Subject'] = subject
+            
+            return records
+        except Exception as e:
+            print(f"[ERROR] Failed to get attendance for subject {subject}: {e}")
+            return []
+    
+    def get_all_attendance_subjects(self):
+        """Get all available subject sheets"""
+        subjects = ['Chemistry', 'Math', 'Physics', 'English']
+        available = []
+        
+        for subject in subjects:
+            try:
+                self.spreadsheet.worksheet(subject)
+                available.append(subject)
+            except:
+                continue
+        
+        return available
+    
+    def add_attendance_to_subject(self, subject, attendance_data):
+        """Add attendance record to a specific subject sheet"""
+        try:
+            worksheet = self.spreadsheet.worksheet(subject)
             
             row = [
-                next_id,  # ID
-                attendance_data.get('user_id', ''),
-                attendance_data.get('subject', ''),
-                attendance_data.get('status', 'absent'),
+                attendance_data.get('student_id', ''),
                 attendance_data.get('date', datetime.now().strftime('%Y-%m-%d')),
-                datetime.now().isoformat()
+                attendance_data.get('status', 'Absent')
             ]
             
-            self.attendance_sheet.append_row(row)
+            worksheet.append_row(row)
             
             return {
-                'id': next_id,
-                'user_id': attendance_data.get('user_id'),
-                'subject': attendance_data.get('subject'),
-                'status': attendance_data.get('status'),
-                'date': attendance_data.get('date')
+                'subject': subject,
+                'student_id': attendance_data.get('student_id'),
+                'date': attendance_data.get('date'),
+                'status': attendance_data.get('status')
             }
         except Exception as e:
-            print(f"[ERROR] Failed to add attendance: {e}")
+            print(f"[ERROR] Failed to add attendance to {subject}: {e}")
             return None
+    
+    def add_attendance(self, attendance_data):
+        """Add attendance record - tries subject sheet first, then old Attendance sheet"""
+        # Try to add to subject sheet if available
+        if 'subject' in attendance_data:
+            result = self.add_attendance_to_subject(attendance_data['subject'], attendance_data)
+            if result:
+                return result
+        
+        # Fallback to old Attendance sheet if it exists
+        if self.attendance_sheet:
+            try:
+                records = self.attendance_sheet.get_all_records()
+                next_id = len(records) + 1
+                
+                row = [
+                    next_id,  # ID
+                    attendance_data.get('user_id', ''),
+                    attendance_data.get('subject', ''),
+                    attendance_data.get('status', 'Absent'),
+                    attendance_data.get('date', datetime.now().strftime('%Y-%m-%d')),
+                    datetime.now().isoformat()
+                ]
+                
+                self.attendance_sheet.append_row(row)
+                
+                return {
+                    'id': next_id,
+                    'user_id': attendance_data.get('user_id'),
+                    'subject': attendance_data.get('subject'),
+                    'status': attendance_data.get('status'),
+                    'date': attendance_data.get('date')
+                }
+            except Exception as e:
+                print(f"[ERROR] Failed to add attendance: {e}")
+        
+        return None
     
     # ==================== RESULTS OPERATIONS ====================
     
