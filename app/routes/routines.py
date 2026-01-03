@@ -17,12 +17,16 @@ def get_routines():
         day = request.args.get('day')
         
         all_routines = db.get_all_routines()
+        print(f'[DEBUG] get_routines: Retrieved {len(all_routines)} routines')
+        if all_routines:
+            print(f'[DEBUG] First routine: {all_routines[0]}')
         
         if day:
             routines = [r for r in all_routines if r.get('day', '').lower() == day.lower()]
         else:
             routines = all_routines
         
+        print(f'[DEBUG] Returning {len(routines)} routines')
         return jsonify(routines), 200
     except Exception as e:
         print(f'[ERROR] get_routines: {e}')

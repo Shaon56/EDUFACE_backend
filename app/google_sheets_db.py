@@ -149,11 +149,11 @@ class GoogleSheetsDB:
                     'id': record.get('ID', ''),
                     'user_id': record.get('User ID', ''),
                     'day': record.get('day', ''),
-                    'start_time': record.get('Start Time', ''),
-                    'end_time': record.get('End Time', ''),
+                    'start_time': record.get('start_time', ''),
+                    'end_time': record.get('end_time', ''),
                     'subject': record.get('subject', ''),
-                    'instructor_name': record.get('Instructor', ''),
-                    'room_number': record.get('Room', '')
+                    'instructor_name': record.get('instructor_name', ''),
+                    'room_number': record.get('room_number', '')
                 }
                 normalized.append(normalized_record)
             return normalized
@@ -171,13 +171,13 @@ class GoogleSheetsDB:
                 if str(record.get('User ID', '')) == str(user_id):
                     normalized_record = {
                         'id': record.get('ID', ''),
-                        'user_id': record.get('User ID', ''),
+                        'user_id': record.get('user_id', ''),
                         'day': record.get('day', ''),
-                        'start_time': record.get('Start Time', ''),
-                        'end_time': record.get('End Time', ''),
+                        'start_time': record.get('start_time', ''),
+                        'end_time': record.get('end_time', ''),
                         'subject': record.get('subject', ''),
-                        'instructor_name': record.get('Instructor', ''),
-                        'room_number': record.get('Room', '')
+                        'instructor_name': record.get('instructor_name', ''),
+                        'room_number': record.get('room_number', '')
                     }
                     normalized.append(normalized_record)
             return normalized

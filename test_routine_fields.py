@@ -43,15 +43,23 @@ def test_routine_fields():
         for i, routine in enumerate(routines, 1):
             print(f"\nRoutine {i}:")
             print(f"  ID: {routine.get('id')}")
-            print(f"  Subject: {routine.get('Subject')} {'✅' if routine.get('Subject') else '❌ MISSING'}")
-            print(f"  Day: {routine.get('Day')} {'✅' if routine.get('Day') else '❌ MISSING'}")
-            print(f"  Start Time: {routine.get('start_time')}")
-            print(f"  End Time: {routine.get('end_time')}")
-            print(f"  Room: {routine.get('room_number')}")
-            print(f"  Instructor: {routine.get('instructor_name')}")
+            print(f"  subject: {routine.get('subject')} {'✅' if routine.get('subject') else '❌ MISSING'}")
+            print(f"  day: {routine.get('day')} {'✅' if routine.get('day') else '❌ MISSING'}")
+            
+            # Check field existence AND values
+            start_time = routine.get('start_time')
+            end_time = routine.get('end_time')
+            room = routine.get('room_number')
+            instructor = routine.get('instructor_name')
+            
+            print(f"  Start Time: '{start_time}' {'✅' if start_time else '❌ EMPTY/NULL'}")
+            print(f"  End Time: '{end_time}' {'✅' if end_time else '❌ EMPTY/NULL'}")
+            print(f"  Room: '{room}' {'✅' if room else '❌ EMPTY/NULL'}")
+            print(f"  Instructor: '{instructor}' {'✅' if instructor else '❌ EMPTY/NULL'}")
             
             # Show all keys
             print(f"  All Keys: {list(routine.keys())}")
+            print(f"\n  Raw JSON: {json.dumps(routine, indent=4)}")
     else:
         print(f"❌ Failed to get routines: {routines_response.status_code}")
     
