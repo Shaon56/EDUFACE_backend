@@ -70,3 +70,51 @@ def get_user(user_id):
     except Exception as e:
         print(f'[ERROR] get_user: {e}')
         return jsonify({'message': f'Error: {str(e)}'}), 500
+
+@users_bp.route('/<int:user_id>', methods=['PUT'])
+@jwt_required()
+def update_user(user_id):
+    """Update user profile"""
+    try:
+        db = GoogleSheetsDB()
+        identity = get_jwt_identity()
+        current_user_id = int(str(identity).strip()) if identity else None
+        
+        if not current_user_id:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        # Users can only update their own profile
+        if current_user_id != user_id:
+            return jsonify({'message': 'Unauthorized'}), 403
+        
+        user = db.find_user_by_id(user_id)
+        if not user:
+            return jsonify({'message': 'User not found'}), 404
+        
+        data = request.get_json()
+        
+        # Update allowed fields
+        update_data = {}
+        if 'full_name' in data:
+            update_data['Full Name'] = data['full_name']
+        if 'parent_email' in data:
+            update_data['Parent Email'] = data['parent_email']
+        if 'contact_number' in data:
+            update_data['Phone'] = data['contact_number']
+        
+        # Update in database
+        result = db.update_user(user_id, update_data)
+        
+        if result:
+            updated_user = db.find_user_by_id(user_id)
+            return jsonify({
+                'message': 'User updated successfully',
+                'user': updated_user
+            }), 200
+        else:
+            return jsonify({'message': 'Failed to update user'}), 500
+    except Exception as e:
+        print(f'[ERROR] update_user: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({'message': f'Error: {str(e)}'}), 500

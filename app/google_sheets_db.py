@@ -145,6 +145,41 @@ class GoogleSheetsDB:
             print(f"[ERROR] Failed to add user: {e}")
             return None
     
+    def update_user(self, user_id, update_data):
+        """Update user profile fields"""
+        try:
+            # Get all records with row numbers
+            records = self.users_sheet.get_all_records()
+            
+            # Find the row number for this user
+            user_row = None
+            for idx, record in enumerate(records, start=2):  # Start at 2 because row 1 is headers
+                if record.get('ID') == user_id:
+                    user_row = idx
+                    break
+            
+            if not user_row:
+                print(f"[ERROR] User with ID {user_id} not found")
+                return False
+            
+            # Get header row to find column indices
+            headers = self.users_sheet.row_values(1)
+            
+            # Update each field that was provided
+            for field_name, field_value in update_data.items():
+                if field_name in headers:
+                    col_idx = headers.index(field_name) + 1  # gspread uses 1-based indexing
+                    self.users_sheet.update_cell(user_row, col_idx, field_value)
+                    print(f"[DEBUG] Updated {field_name} for user {user_id}")
+            
+            print(f"[DEBUG] User {user_id} profile updated successfully")
+            return True
+        except Exception as e:
+            print(f"[ERROR] Failed to update user: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
     # ==================== ROUTINE OPERATIONS ====================
     
     def get_all_routines(self):
