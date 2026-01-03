@@ -31,6 +31,19 @@ def get_attendance():
     
     return jsonify(records), 200
 
+@attendance_bp.route('/recent', methods=['GET'])
+@jwt_required()
+def get_recent_attendance():
+    """Get recent attendance records for dashboard"""
+    db = GoogleSheetsDB()
+    user_id = int(get_jwt_identity())
+    
+    # Get user's recent attendance
+    records = db.get_user_attendance(user_id)
+    
+    # Return last 10 records
+    return jsonify(records[-10:] if records else []), 200
+
 @attendance_bp.route('', methods=['POST'])
 @jwt_required()
 def create_attendance():
