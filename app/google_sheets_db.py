@@ -42,8 +42,10 @@ class GoogleSheetsDB:
         
         # Get the spreadsheet (you'll need to create this and set GOOGLE_SHEETS_ID env var)
         spreadsheet_id = os.getenv('GOOGLE_SHEETS_ID', 'EDUFACE Database')
+        print(f"[DEBUG] Attempting to open spreadsheet: '{spreadsheet_id}'")
         try:
             self.spreadsheet = self.client.open(spreadsheet_id)
+            print(f"[DEBUG] Successfully opened spreadsheet")
         except gspread.exceptions.SpreadsheetNotFound:
             raise Exception(f"Google Sheet '{spreadsheet_id}' not found. Create it first!")
         
@@ -142,15 +144,14 @@ class GoogleSheetsDB:
         """Get all routines"""
         try:
             records = self.routines_sheet.get_all_records()
-            print(f"[DEBUG] Raw records from sheet: {records}")
             
             # Normalize field names to lowercase for consistent API responses
             normalized = []
             for record in records:
-                print(f"[DEBUG] Processing record: {record}")
+                # Handle both possible column name formats
                 normalized_record = {
-                    'id': record.get('ID', ''),
-                    'user_id': record.get('User ID', ''),
+                    'id': record.get('ID', record.get('id', '')),
+                    'user_id': record.get('User ID', record.get('user_id', '')),
                     'day': record.get('day', ''),
                     'start_time': record.get('start_time', ''),
                     'end_time': record.get('end_time', ''),
@@ -158,7 +159,6 @@ class GoogleSheetsDB:
                     'instructor_name': record.get('instructor_name', ''),
                     'room_number': record.get('room_number', '')
                 }
-                print(f"[DEBUG] Normalized record: {normalized_record}")
                 normalized.append(normalized_record)
             return normalized
         except Exception as e:
@@ -176,8 +176,8 @@ class GoogleSheetsDB:
             for record in records:
                 if str(record.get('User ID', '')) == str(user_id):
                     normalized_record = {
-                        'id': record.get('ID', ''),
-                        'user_id': record.get('user_id', ''),
+                        'id': record.get('ID', record.get('id', '')),
+                        'user_id': record.get('User ID', record.get('user_id', '')),
                         'day': record.get('day', ''),
                         'start_time': record.get('start_time', ''),
                         'end_time': record.get('end_time', ''),
