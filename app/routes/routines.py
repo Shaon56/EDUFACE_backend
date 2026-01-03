@@ -14,12 +14,12 @@ def get_routines():
     """Get all routines or filter by day"""
     try:
         db = GoogleSheetsDB()
-        day = request.args.get('Day')
+        day = request.args.get('day')
         
         all_routines = db.get_all_routines()
         
         if day:
-            routines = [r for r in all_routines if r.get('Day', '').lower() == day.lower()]
+            routines = [r for r in all_routines if r.get('day', '').lower() == day.lower()]
         else:
             routines = all_routines
         
@@ -72,7 +72,7 @@ def create_routine():
         print(f'[DEBUG] Request data: {data}')
         
         # Validate required fields
-        required_fields = ['Subject', 'Day', 'startTime', 'endTime', 'room']
+        required_fields = ['subject', 'day', 'startTime', 'endTime', 'room']
         missing = [f for f in required_fields if f not in data]
         if missing:
             print(f'[ERROR] Missing fields: {missing}')
@@ -81,8 +81,8 @@ def create_routine():
         print('[DEBUG] Creating routine in Google Sheets')
         routine_data = {
             'user_id': user_id,
-            'Subject': data['Subject'],
-            'Day': data['Day'],
+            'subject': data['subject'],
+            'day': data['day'],
             'start_time': data['startTime'],
             'end_time': data['endTime'],
             'room_number': data['room'],

@@ -148,10 +148,10 @@ class GoogleSheetsDB:
                 normalized_record = {
                     'id': record.get('ID', ''),
                     'user_id': record.get('User ID', ''),
-                    'day': record.get('Day', ''),
+                    'day': record.get('day', ''),
                     'start_time': record.get('Start Time', ''),
                     'end_time': record.get('End Time', ''),
-                    'subject': record.get('Subject', ''),
+                    'subject': record.get('subject', ''),
                     'instructor_name': record.get('Instructor', ''),
                     'room_number': record.get('Room', '')
                 }
@@ -172,10 +172,10 @@ class GoogleSheetsDB:
                     normalized_record = {
                         'id': record.get('ID', ''),
                         'user_id': record.get('User ID', ''),
-                        'day': record.get('Day', ''),
+                        'day': record.get('day', ''),
                         'start_time': record.get('Start Time', ''),
                         'end_time': record.get('End Time', ''),
-                        'subject': record.get('Subject', ''),
+                        'subject': record.get('subject', ''),
                         'instructor_name': record.get('Instructor', ''),
                         'room_number': record.get('Room', '')
                     }
