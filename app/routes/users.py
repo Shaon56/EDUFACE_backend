@@ -8,12 +8,12 @@ from app.google_sheets_db import GoogleSheetsDB
 from werkzeug.security import generate_password_hash
 
 users_bp = Blueprint('users', __name__)
-db = GoogleSheetsDB()
 
 @users_bp.route('', methods=['GET'])
 @jwt_required()
 def get_users():
     """Get all users (admin only)"""
+    db = GoogleSheetsDB()
     user_id = int(get_jwt_identity())
     user = db.find_user_by_id(user_id)
     
@@ -27,6 +27,7 @@ def get_users():
 @jwt_required()
 def get_user(user_id):
     """Get specific user"""
+    db = GoogleSheetsDB()
     current_user_id = int(get_jwt_identity())
     user = db.find_user_by_id(user_id)
     

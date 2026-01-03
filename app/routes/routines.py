@@ -7,12 +7,12 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.google_sheets_db import GoogleSheetsDB
 
 routines_bp = Blueprint('routines', __name__)
-db = GoogleSheetsDB()
 
 @routines_bp.route('', methods=['GET'])
 @jwt_required()
 def get_routines():
     """Get all routines or filter by day"""
+    db = GoogleSheetsDB()
     day = request.args.get('day')
     
     all_routines = db.get_all_routines()
@@ -28,6 +28,7 @@ def get_routines():
 @jwt_required()
 def get_routine(routine_id):
     """Get specific routine"""
+    db = GoogleSheetsDB()
     all_routines = db.get_all_routines()
     
     for routine in all_routines:
@@ -41,6 +42,7 @@ def get_routine(routine_id):
 def create_routine():
     """Create new routine (admin only)"""
     try:
+        db = GoogleSheetsDB()
         print('[DEBUG] Creating routine endpoint called')
         
         user_id = int(get_jwt_identity())
@@ -97,6 +99,7 @@ def create_routine():
 @jwt_required()
 def delete_routine(routine_id):
     """Delete routine (admin only)"""
+    db = GoogleSheetsDB()
     user_id = int(get_jwt_identity())
     user = db.find_user_by_id(user_id)
     

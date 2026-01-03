@@ -1,47 +1,45 @@
 """
-Test script to verify database and create routine
+Test script to verify Google Sheets database connection
 """
 
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from run import create_app, db
-from app.models import Routine
+from app.google_sheets_db import GoogleSheetsDB
 
-# Create the app
-app = create_app()
+# Initialize database
+db = GoogleSheetsDB()
 
-with app.app_context():
-    # Drop all tables and recreate them
-    print("Creating database tables...")
-    db.create_all()
-    print("✅ Database tables created!")
+try:
+    # Test getting all users
+    print("Testing Google Sheets connection...")
+    users = db.get_all_users()
+    print(f"✅ Successfully connected to Google Sheets!")
+    print(f"   Total users in database: {len(users)}")
     
-    # Test creating a routine
-    try:
-        print("\nTesting routine creation...")
-        routine = Routine(
-            subject='Test Math',
-            day='Monday',
-            start_time='09:00',
-            end_time='10:00',
-            room_number='101',
-            instructor_name='Mr. Smith'
-        )
-        
-        db.session.add(routine)
-        db.session.commit()
-        
-        print(f"✅ Routine created successfully!")
-        print(f"   ID: {routine.id}")
-        print(f"   Subject: {routine.subject}")
-        print(f"   Day: {routine.day}")
-        print(f"   Data: {routine.to_dict()}")
-        
-        # Retrieve and verify
-        retrieved = Routine.query.first()
-        print(f"\n✅ Retrieved routine: {retrieved.to_dict()}")
+    if users:
+        print("\n📋 Sample user:")
+        first_user = users[0]
+        for key, value in first_user.items():
+            print(f"   {key}: {value}")
+    
+    # Test getting routines
+    print("\nTesting routine retrieval...")
+    routines = db.get_all_routines()
+    print(f"✅ Successfully retrieved routines!")
+    print(f"   Total routines: {len(routines)}")
+    
+    if routines:
+        print("\n📋 Sample routine:")
+        first_routine = routines[0]
+        for key, value in first_routine.items():
+            print(f"   {key}: {value}")
+            
+except Exception as e:
+    print(f"❌ Error: {e}")
+    import traceback
+    traceback.print_exc()
         
     except Exception as e:
         print(f"❌ Error: {str(e)}")

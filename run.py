@@ -66,7 +66,7 @@ from datetime import timedelta
 from flask import Flask
 from flask_cors import CORS
 
-from app import db, jwt
+from app import jwt
 from app.routes import (
     auth_bp,
     users_bp,
@@ -101,7 +101,6 @@ def create_app():
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # -------------------- Extensions --------------------
-    db.init_app(app)
     jwt.init_app(app)
 
     @jwt.token_in_blocklist_loader
@@ -114,10 +113,6 @@ def create_app():
     app.register_blueprint(routines_bp, url_prefix="/api/routines")
     app.register_blueprint(attendance_bp, url_prefix="/api/attendance")
     app.register_blueprint(results_bp, url_prefix="/api/results")
-
-    # -------------------- Database --------------------
-    with app.app_context():
-        db.create_all()
 
     # -------------------- Health --------------------
     @app.route("/api/health")

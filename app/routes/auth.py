@@ -8,12 +8,12 @@ from app.google_sheets_db import GoogleSheetsDB
 from werkzeug.security import generate_password_hash, check_password_hash
 
 auth_bp = Blueprint('auth', __name__)
-db = GoogleSheetsDB()
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
     """Register a new student"""
     try:
+        db = GoogleSheetsDB()
         data = request.get_json()
         
         # Validate required fields
@@ -60,6 +60,7 @@ def register():
 def login():
     """Login user"""
     try:
+        db = GoogleSheetsDB()
         data = request.get_json()
         print(f'[LOGIN] Login attempt with email: {data.get("email")}, role: {data.get("role")}')
         
@@ -116,6 +117,7 @@ def login():
 @jwt_required()
 def verify_token():
     """Verify if token is valid"""
+    db = GoogleSheetsDB()
     user_id = int(get_jwt_identity())
     user = db.find_user_by_id(user_id)
     

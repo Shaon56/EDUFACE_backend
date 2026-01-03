@@ -8,12 +8,12 @@ from app.google_sheets_db import GoogleSheetsDB
 from datetime import datetime
 
 attendance_bp = Blueprint('attendance', __name__)
-db = GoogleSheetsDB()
 
 @attendance_bp.route('', methods=['GET'])
 @jwt_required()
 def get_attendance():
     """Get attendance records"""
+    db = GoogleSheetsDB()
     user_id = int(get_jwt_identity())
     user = db.find_user_by_id(user_id)
     subject = request.args.get('subject')
@@ -35,6 +35,7 @@ def get_attendance():
 @jwt_required()
 def create_attendance():
     """Create attendance record (admin only)"""
+    db = GoogleSheetsDB()
     user_id = int(get_jwt_identity())
     user = db.find_user_by_id(user_id)
     
