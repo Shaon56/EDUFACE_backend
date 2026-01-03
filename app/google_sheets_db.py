@@ -68,6 +68,7 @@ class GoogleSheetsDB:
         """Get all users from Google Sheets"""
         try:
             records = self.users_sheet.get_all_records()
+            # Return as-is to preserve all fields
             return records
         except Exception as e:
             print(f"[ERROR] Failed to get users: {e}")
@@ -141,7 +142,21 @@ class GoogleSheetsDB:
         """Get all routines"""
         try:
             records = self.routines_sheet.get_all_records()
-            return records
+            # Normalize field names to lowercase for consistent API responses
+            normalized = []
+            for record in records:
+                normalized_record = {
+                    'id': record.get('ID', ''),
+                    'user_id': record.get('User ID', ''),
+                    'day': record.get('Day', ''),
+                    'start_time': record.get('Start Time', ''),
+                    'end_time': record.get('End Time', ''),
+                    'subject': record.get('Subject', ''),
+                    'instructor_name': record.get('Instructor', ''),
+                    'room_number': record.get('Room', '')
+                }
+                normalized.append(normalized_record)
+            return normalized
         except Exception as e:
             print(f"[ERROR] Failed to get routines: {e}")
             return []
@@ -150,8 +165,22 @@ class GoogleSheetsDB:
         """Get routines for a specific user"""
         try:
             records = self.routines_sheet.get_all_records()
-            user_routines = [r for r in records if str(r.get('User ID', '')) == str(user_id)]
-            return user_routines
+            # Normalize field names to lowercase
+            normalized = []
+            for record in records:
+                if str(record.get('User ID', '')) == str(user_id):
+                    normalized_record = {
+                        'id': record.get('ID', ''),
+                        'user_id': record.get('User ID', ''),
+                        'day': record.get('Day', ''),
+                        'start_time': record.get('Start Time', ''),
+                        'end_time': record.get('End Time', ''),
+                        'subject': record.get('Subject', ''),
+                        'instructor_name': record.get('Instructor', ''),
+                        'room_number': record.get('Room', '')
+                    }
+                    normalized.append(normalized_record)
+            return normalized
         except Exception as e:
             print(f"[ERROR] Failed to get user routines: {e}")
             return []

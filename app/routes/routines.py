@@ -19,7 +19,7 @@ def get_routines():
         all_routines = db.get_all_routines()
         
         if day:
-            routines = [r for r in all_routines if r.get('Day', '').lower() == day.lower()]
+            routines = [r for r in all_routines if r.get('day', '').lower() == day.lower()]
         else:
             routines = all_routines
         
