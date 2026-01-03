@@ -145,7 +145,7 @@ class GoogleSheetsDB:
             # Normalize field names to lowercase for consistent API responses
             normalized = []
             for record in records:
-                """normalized_record = {
+                normalized_record = {
                     'id': record.get('ID', ''),
                     'user_id': record.get('User ID', ''),
                     'day': record.get('Day', ''),
@@ -154,18 +154,7 @@ class GoogleSheetsDB:
                     'subject': record.get('Subject', ''),
                     'instructor_name': record.get('Instructor', ''),
                     'room_number': record.get('Room', '')
-                }"""
-                normalized_record = {
-                    'id': record.get('ID', ''),
-                    'user_id': record.get('User ID', ''),
-                    'day': record.get('Day', ''),
-                    'start_time': record.get('start_time', ''),
-                    'end_time': record.get('end_time', ''),
-                    'subject': record.get('Subject', ''),
-                    'instructor_name': record.get('instructor_name', ''),
-                    'room_number': record.get('room_number', '')
                 }
-
                 normalized.append(normalized_record)
             return normalized
         except Exception as e:
@@ -184,13 +173,12 @@ class GoogleSheetsDB:
                         'id': record.get('ID', ''),
                         'user_id': record.get('User ID', ''),
                         'day': record.get('Day', ''),
-                        'start_time': record.get('start_time', ''),
-                        'end_time': record.get('end_time', ''),
+                        'start_time': record.get('Start Time', ''),
+                        'end_time': record.get('End Time', ''),
                         'subject': record.get('Subject', ''),
-                        'instructor_name': record.get('instructor_name', ''),
-                        'room_number': record.get('room_number', '')
+                        'instructor_name': record.get('Instructor', ''),
+                        'room_number': record.get('Room', '')
                     }
-
                     normalized.append(normalized_record)
             return normalized
         except Exception as e:
