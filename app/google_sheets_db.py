@@ -47,11 +47,20 @@ class GoogleSheetsDB:
         except gspread.exceptions.SpreadsheetNotFound:
             raise Exception(f"Google Sheet '{spreadsheet_id}' not found. Create it first!")
         
-        # Get worksheets
-        self.users_sheet = self.spreadsheet.worksheet('Users')
-        self.routines_sheet = self.spreadsheet.worksheet('Routines')
-        self.attendance_sheet = self.spreadsheet.worksheet('Attendance')
-        self.results_sheet = self.spreadsheet.worksheet('Results')
+        # Get worksheets - Handle both singular and plural names
+        self.users_sheet = self._get_worksheet('Users', 'User')
+        self.routines_sheet = self._get_worksheet('Routines', 'Routine')
+        self.attendance_sheet = self._get_worksheet('Attendance', 'Attendances')
+        self.results_sheet = self._get_worksheet('Results', 'Result')
+    
+    def _get_worksheet(self, *names):
+        """Get worksheet by trying multiple possible names"""
+        for name in names:
+            try:
+                return self.spreadsheet.worksheet(name)
+            except:
+                continue
+        raise Exception(f"Could not find sheet with any of these names: {names}")
     
     # ==================== USER OPERATIONS ====================
     
