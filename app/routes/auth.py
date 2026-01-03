@@ -99,10 +99,10 @@ def login():
         print(f'[LOGIN] Login successful for user {user_id}')
         return jsonify({
             'message': 'Login successful',
-            'access_token': access_token,
+            'token': access_token,
             'user': {
                 'id': user.get('ID'),
-                'name': user.get('Full Name'),
+                'full_name': user.get('Full Name'),
                 'email': user.get('Email'),
                 'student_id': user.get('Student ID'),
                 'role': user.get('Role', 'student')
@@ -128,7 +128,7 @@ def verify_token():
         'valid': True,
         'user': {
             'id': user.get('ID'),
-            'name': user.get('Full Name'),
+            'full_name': user.get('Full Name'),
             'email': user.get('Email'),
             'role': user.get('Role', 'student')
         }
